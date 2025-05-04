@@ -20,8 +20,8 @@
 
   <script>
   const { createClient } = supabase;
-  const SUPABASE_URL = window.env.SUPABASE_URL;
-  const SUPABASE_KEY = window.env.SUPABASE_KEY;
+  const SUPABASE_URL = "https://zzhuzgphipmrqoxylajk.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6aHV6Z3BoaXBtcnFveHlsYWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzOTIwNTUsImV4cCI6MjA2MTk2ODA1NX0.ZglfWGJTCAoIDlkPGEQkv83D7TeiPDZ6btXOL-v_r8I";
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const video = document.getElementById('preview');
