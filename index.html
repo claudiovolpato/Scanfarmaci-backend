@@ -55,7 +55,7 @@
     }
 
     async function scaricaScansioni() {
-      const { data, error } = await supabase.from('scansioni').select(`id, codice, quantita, dataora, descrizioni(descrizione)`).order('dataora', { ascending: false });
+      const { data, error } = await db.from('scansioni').select(`id, codice, quantita, dataora, descrizioni(descrizione)`).order('dataora', { ascending: false });
       if (error) return alert("Errore nel caricamento");
       output.innerHTML = data.map(row => `${row.codice} - ${row.descrizioni?.descrizione || ''} - ${row.quantita} - ${row.dataora}`).join('<br>');
     }
