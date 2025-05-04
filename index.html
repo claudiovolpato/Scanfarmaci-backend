@@ -20,8 +20,8 @@
 
   <script>
   const { createClient } = supabase;
-  const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
-  const SUPABASE_KEY = import.meta.env.PUBLIC_SUPABASE_KEY;
+  const SUPABASE_URL = window.env.SUPABASE_URL;
+  const SUPABASE_KEY = window.env.SUPABASE_KEY;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
     );
 
