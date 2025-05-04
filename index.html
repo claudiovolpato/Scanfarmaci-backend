@@ -19,9 +19,10 @@
   <div id="output"></div>
 
   <script>
-    const supabase = supabase.createClient(
-      window.env.SUPABASE_URL,
-      window.env.SUPABASE_KEY
+  const { createClient } = supabase;
+  const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+  const SUPABASE_KEY = import.meta.env.PUBLIC_SUPABASE_KEY;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
     );
 
     const video = document.getElementById('preview');
@@ -44,8 +45,8 @@
           const descrizione = prompt("Descrizione:", "");
           const quantita = parseInt(prompt("Quantità:", "1"));
           if (!isNaN(quantita)) {
-            await supabase.from('descrizioni').upsert({ codice, descrizione });
-            await supabase.from('scansioni').insert({ codice, quantita });
+            await db.from('descrizioni').upsert({ codice, descrizione });
+            await db.from('scansioni').insert({ codice, quantita });
             alert('Salvato con successo');
             scaricaScansioni();
           }
