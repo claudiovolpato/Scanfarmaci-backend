@@ -96,14 +96,7 @@ th, td {
       background: #0077cc;
       color: white;
     }
-    #output {
-      margin-top: 1em;
-      text-align: left;
-      max-width: 640px;
-      margin: auto;
-      padding: 1em;
-      border-radius: 8px;
-    }
+
     #modalOverlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999;
@@ -138,7 +131,7 @@ th, td {
       <button onclick="startScan()">Scansiona articolo</button>
       <video id="preview" autoplay muted playsinline></video>
       
-    <div id="output">
+    <div id="output" style="margin-top:1em;>
       <table style="width:100%; border-collapse: collapse;">
         <thead>
           <tr style="background:#e0e0e0">
