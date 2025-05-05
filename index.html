@@ -1,15 +1,56 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScanFarmaci WebApp</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScanFarmaci</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💊</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { font-family: sans-serif; background: #f4f6f8; padding: 2em; text-align: center; }
+    body { font-family: sans-serif; margin: 0; background: #eef3f7; }
+    header {
+      background: #0077cc;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5em 1em;
+    }
+    #logo {
+      height: 40px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 0.5em;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      padding: 2em;
+      text-align: center;
+    }
     video { width: 100%; max-width: 640px; display: none; border-radius: 12px; }
-    button { margin: 0.5em; padding: 0.75em 1.5em; font-size: 16px; border: none; border-radius: 8px; background: #0077cc; color: white; }
-    #output { margin-top: 1em; text-align: left; max-width: 640px; margin: auto; background: white; padding: 1em; border-radius: 8px; }
+    button {
+      margin: 0.5em;
+      padding: 0.75em 1.5em;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #0077cc;
+      color: white;
+    }
+    #output {
+      margin-top: 1em;
+      text-align: left;
+      max-width: 640px;
+      margin: auto;
+      background: white;
+      padding: 1em;
+      border-radius: 8px;
+    }
     #modalOverlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999;
@@ -21,16 +62,36 @@
     input[type=number], input[type=text] {
       font-size: 16px; padding: 0.5em; margin: 0.5em 0; width: 80%;
     }
-    .qty-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 0.5em; }
+    .qty-controls {
+      display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 0.5em;
+    }
     .qty-controls button { width: 40px; font-size: 18px; padding: 0.25em; }
+    .section { display: none; }
+    .active { display: block; }
   </style>
 </head>
 <body>
-  <h2>ScanFarmaci</h2>
-  <button onclick="startScan()">Scansiona articolo</button>
-  <video id="preview" autoplay muted playsinline></video>
-  <div id="output"></div>
-  <button onclick="downloadExcel()">Scarica Excel</button>
+  <header>
+    <img id="logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>💊</text></svg>" alt="Logo">
+    <nav>
+      <a href="#" onclick="mostraPagina('scansioni')">Scansioni</a>
+      <a href="#" onclick="mostraPagina('esporta')">Esporta</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="scansioni" class="section active">
+      <h2>ScanFarmaci</h2>
+      <button onclick="startScan()">Scansiona articolo</button>
+      <video id="preview" autoplay muted playsinline></video>
+      <div id="output"></div>
+    </section>
+
+    <section id="esporta" class="section">
+      <h2>Esporta dati</h2>
+      <button onclick="downloadExcel()">Scarica Excel</button>
+    </section>
+  </main>
 
   <div id="modalOverlay">
     <div id="quantityPrompt">
@@ -66,6 +127,11 @@
       updateOutput();
     };
 
+    function mostraPagina(id) {
+      document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
     async function startScan() {
       if (!('BarcodeDetector' in window)) return alert('BarcodeDetector non supportato.');
       const detector = new BarcodeDetector();
@@ -85,7 +151,6 @@
         }
       }, 500);
     }
-
 
     function mostraPromptQuantita(codice) {
       promptCodice.innerText = `Codice: ${codice}`;
@@ -107,7 +172,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ codice: codiceCorrente, descrizione: d })
         });
-
         await fetch('/api/scansioni', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -116,7 +180,6 @@
         updateOutput();
         modalOverlay.style.display = 'none';
       }
-
     }
 
     function annullaQuantita() {
