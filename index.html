@@ -32,7 +32,6 @@
   <video id="preview" autoplay muted playsinline></video>
   <div id="output"></div>
   <button onclick="downloadExcel()">Scarica Excel</button>
-  <button onclick="test()">Test</button>
 
   <div id="modalOverlay">
     <div id="quantityPrompt">
@@ -89,10 +88,6 @@
     }
 
 
-        function test() {
-      mostraPromptQuantita(1001);
-    }
-
     function mostraPromptQuantita(codice) {
       promptCodice.innerText = `Codice: ${codice}`;
       inputDescrizione.value = descrizioni[codice] || "";
@@ -113,6 +108,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ codice: codiceCorrente, descrizione: d })
         });
+        /*
         await fetch('/api/scansioni', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -121,6 +117,7 @@
         updateOutput();
         modalOverlay.style.display = 'none';
       }
+      */
     }
 
     function annullaQuantita() {
