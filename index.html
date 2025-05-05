@@ -139,7 +139,7 @@ th, td {
       <button onclick="startScan()">Scansiona articolo</button>
       <video id="preview" autoplay muted playsinline></video>
       
-    <div id="output" style="margin-top:1em;>
+    <div id="output">
       <table style="width:100%; border-collapse: collapse;">
         <thead>
           <tr style="background:#e0e0e0">
@@ -292,6 +292,11 @@ th, td {
           <td style="padding:8px; text-align:right;">${row[2]}</td>
           <td style="padding:8px;">${row[3]}</td>
         </tr>`;
+      }
+    
+      output.innerHTML = '';
+      for (let i = 1; i < dati.length; i++) {
+        output.innerHTML += `<p>${dati[i][0]} - ${dati[i][1]} - ${dati[i][2]} scatole - ${dati[i][3]}</p>`;
       }
     }
 
