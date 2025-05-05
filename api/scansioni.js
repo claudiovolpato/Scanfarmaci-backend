@@ -1,151 +1,44 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScanFarmaci WebApp</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body { font-family: sans-serif; background: #f4f6f8; padding: 2em; text-align: center; }
-    video { width: 100%; max-width: 640px; display: none; border-radius: 12px; }
-    button { margin: 0.5em; padding: 0.75em 1.5em; font-size: 16px; border: none; border-radius: 8px; background: #0077cc; color: white; }
-    #output { margin-top: 1em; text-align: left; max-width: 640px; margin: auto; background: white; padding: 1em; border-radius: 8px; }
-    #modalOverlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999;
-    }
-    #quantityPrompt {
-      background: white; padding: 1.5em; border-radius: 12px; max-width: 320px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3); text-align: center;
-    }
-    input[type=number], input[type=text] {
-      font-size: 16px; padding: 0.5em; margin: 0.5em 0; width: 80%;
-    }
-    .qty-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 0.5em; }
-    .qty-controls button { width: 40px; font-size: 18px; padding: 0.25em; }
-  </style>
-</head>
-<body>
-  <h2>ScanFarmaci</h2>
-  <button onclick="startScan()">Scansiona articolo</button>
-  <button onclick="clearData()">Cancella quantità</button>
-  <video id="preview" autoplay muted playsinline></video>
-  <div id="output"></div>
-  <button onclick="downloadExcel()">Scarica Excel</button>
+// api/scansioni.js
 
-  <div id="modalOverlay">
-    <div id="quantityPrompt">
-      <p id="promptCodice"></p>
-      <input type="text" id="inputDescrizione" placeholder="Descrizione">
-      <div class="qty-controls">
-        <button onclick="modificaQuantita(-1)">−</button>
-        <input type="number" id="inputQuantita" value="1" min="1">
-        <button onclick="modificaQuantita(1)">+</button>
-      </div>
-      <div style="margin-top: 1em;">
-        <button onclick="confermaQuantita()">Conferma</button>
-        <button onclick="annullaQuantita()">Annulla</button>
-      </div>
-    </div>
-  </div>
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Metodo non consentito' });
+  }
 
-  <script>
-    const videoElement = document.getElementById('preview');
-    const output = document.getElementById('output');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const promptCodice = document.getElementById('promptCodice');
-    const inputDescrizione = document.getElementById('inputDescrizione');
-    const inputQuantita = document.getElementById('inputQuantita');
+  const { codice, quantita, dataora } = req.body;
 
-    let dati = [['Codice', 'Descrizione', 'Quantità', 'Data/Ora']];
-    let descrizioni = {};
-    let codiceCorrente = "";
+  if (!codice || !quantita) {
+    return res.status(400).json({ error: 'Dati mancanti' });
+  }
 
-    window.onload = async () => {
-      const res = await fetch('/api/descrizioni');
-      descrizioni = await res.json();
-      updateOutput();
-    };
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_KEY;
 
-    async function startScan() {
-      if (!('BarcodeDetector' in window)) return alert('BarcodeDetector non supportato.');
-      const detector = new BarcodeDetector();
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      videoElement.srcObject = stream;
-      await videoElement.play();
-      videoElement.style.display = 'block';
+  try {
+    const response = await fetch(`${url}/rest/v1/scansioni`, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        codice,
+        quantita,
+        dataora: dataora || new Date().toISOString()
+      })
+    });
 
-      const interval = setInterval(async () => {
-        const barcodes = await detector.detect(videoElement);
-        if (barcodes.length > 0) {
-          codiceCorrente = barcodes[0].rawValue;
-          stream.getTracks().forEach(track => track.stop());
-          videoElement.style.display = 'none';
-          mostraPromptQuantita(codiceCorrente);
-          clearInterval(interval);
-        }
-      }, 500);
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data });
     }
 
-    function mostraPromptQuantita(codice) {
-      promptCodice.innerText = `Codice: ${codice}`;
-      inputDescrizione.value = descrizioni[codice] || "";
-      inputQuantita.value = 1;
-      modalOverlay.style.display = 'flex';
-    }
-
-    async function confermaQuantita() {
-      const q = parseInt(inputQuantita.value);
-      const d = inputDescrizione.value.trim();
-      if (!isNaN(q) && d !== "") {
-        const now = new Date();
-        const dataOra = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-        dati.push([codiceCorrente, d, q, dataOra]);
-        descrizioni[codiceCorrente] = d;
-        await fetch('/api/descrizioni', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ codice: codiceCorrente, descrizione: d })
-        });
-        await fetch('/api/scansioni', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ codice: codiceCorrente, quantita: q })
-        });
-        updateOutput();
-        modalOverlay.style.display = 'none';
-      }
-    }
-
-    function annullaQuantita() {
-      modalOverlay.style.display = 'none';
-    }
-
-    function modificaQuantita(delta) {
-      let q = parseInt(inputQuantita.value) || 1;
-      inputQuantita.value = Math.max(1, q + delta);
-    }
-
-    function updateOutput() {
-      output.innerHTML = '';
-      for (let i = 1; i < dati.length; i++) {
-        output.innerHTML += `<p>${dati[i][0]} - ${dati[i][1]} - ${dati[i][2]} scatole - ${dati[i][3]}</p>`;
-      }
-    }
-
-    function clearData() {
-      if (confirm('Vuoi cancellare tutte le quantità?')) {
-        dati = [['Codice', 'Descrizione', 'Quantità', 'Data/Ora']];
-        updateOutput();
-      }
-    }
-
-    function downloadExcel() {
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(dati);
-      XLSX.utils.book_append_sheet(wb, ws, 'Medicinali');
-      XLSX.writeFile(wb, 'medicinali.xlsx');
-    }
-  </script>
-</body>
-</html>
+    res.status(200).json({ success: true, data });
+  } catch (err) {
+    console.error("Errore:", err);
+    res.status(500).json({ error: 'Errore interno del server' });
+  }
+}
