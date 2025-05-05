@@ -84,7 +84,21 @@
       <h2>ScanFarmaci</h2>
       <button onclick="startScan()">Scansiona articolo</button>
       <video id="preview" autoplay muted playsinline></video>
-      <div id="output"></div>
+      
+    <div id="output">
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background:#e0e0e0">
+            <th style="text-align:left; padding: 8px;">Codice</th>
+            <th style="text-align:left; padding: 8px;">Descrizione</th>
+            <th style="text-align:right; padding: 8px;">Quantità</th>
+            <th style="text-align:left; padding: 8px;">Data/Ora</th>
+          </tr>
+        </thead>
+        <tbody id="outputBody"></tbody>
+      </table>
+    </div>
+    
     </section>
 
     <section id="esporta" class="section">
@@ -192,6 +206,19 @@
     }
 
     function updateOutput() {
+      const tbody = document.getElementById('outputBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      for (let i = 1; i < dati.length; i++) {
+        const row = dati[i];
+        tbody.innerHTML += `<tr>
+          <td style="padding:8px;">${row[0]}</td>
+          <td style="padding:8px;">${row[1]}</td>
+          <td style="padding:8px; text-align:right;">${row[2]}</td>
+          <td style="padding:8px;">${row[3]}</td>
+        </tr>`;
+      }
+    
       output.innerHTML = '';
       for (let i = 1; i < dati.length; i++) {
         output.innerHTML += `<p>${dati[i][0]} - ${dati[i][1]} - ${dati[i][2]} scatole - ${dati[i][3]}</p>`;
