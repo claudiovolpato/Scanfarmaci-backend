@@ -23,6 +23,22 @@
         </tr>`;
       });
     }
+
+
+    function updateOutput() {
+      const tbody = document.getElementById('outputBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      for (let i = 1; i < dati.length; i++) {
+        const row = dati[i];
+        tbody.innerHTML += `<tr>
+          <td style="padding:8px;">${row[0]}</td>
+          <td style="padding:8px;">${row[1]}</td>
+          <td style="padding:8px; text-align:right;">${row[2]}</td>
+          <td style="padding:8px;">${row[3]}</td>
+        </tr>`;
+      }
+    }
     </script>
     
   <style>
@@ -280,22 +296,6 @@ th, td {
       inputQuantita.value = Math.max(1, q + delta);
     }
 
-    function updateOutput() {
-      const tbody = document.getElementById('outputBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      for (let i = 1; i < dati.length; i++) {
-        const row = dati[i];
-        tbody.innerHTML += `<tr>
-          <td style="padding:8px;">${row[0]}</td>
-          <td style="padding:8px;">${row[1]}</td>
-          <td style="padding:8px; text-align:right;">${row[2]}</td>
-          <td style="padding:8px;">${row[3]}</td>
-        </tr>`;
-      }
-
-    }
-
     function downloadExcel() {
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dati);
@@ -303,23 +303,7 @@ th, td {
       XLSX.writeFile(wb, 'medicinali.xlsx');
     }
   
-    async function caricaStorico() {
-      const da = document.getElementById('storicoDa').value;
-      const a = document.getElementById('storicoA').value;
-      if (!da || !a) return alert('Seleziona entrambe le date');
-      const res = await fetch(`/api/scansioni?from=${da}&to=${a}`);
-      const dati = await res.json();
-      const tbody = document.getElementById('storicoBody');
-      tbody.innerHTML = '';
-      dati.forEach(row => {
-        tbody.innerHTML += `<tr>
-          <td style="padding:8px;">${row.codice}</td>
-          <td style="padding:8px;">${row.descrizione || ''}</td>
-          <td style="padding:8px; text-align:right;">${row.quantita}</td>
-          <td style="padding:8px;">${new Date(row.dataora).toLocaleString()}</td>
-        </tr>`;
-      });
-    }
+
     </script>
     
 </body>
