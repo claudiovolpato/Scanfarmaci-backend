@@ -137,6 +137,7 @@
       <label>Da: <input type="date" id="storicoDa"></label>
       <label>A: <input type="date" id="storicoA"></label>
       <button onclick="caricaStorico()">Cerca</button>
+      <button id="btnEsportaStorico" onclick="esportaStorico()" style="display:none;">Esporta</button>
       <div id="storicoRisultati" style="margin-top:1em;">
         <table style="width:100%; border-collapse: collapse;">
           <thead>
@@ -187,6 +188,12 @@
       const res = await fetch('/api/descrizioni');
       descrizioni = await res.json();
       updateOutput();
+
+      // Imposta la data odierna nei campi "Da" e "A"
+      const oggi = new Date().toISOString().split('T')[0];
+      document.getElementById('storicoDa').value = oggi;
+      document.getElementById('storicoA').value = oggi;
+      
     };
 
     function mostraPagina(id) {
@@ -275,46 +282,57 @@
       XLSX.writeFile(wb, 'medicinali.xlsx');
     }
 
-    async function caricaStorico() {
-      const daInput = document.getElementById('storicoDa').value;
-      const aInput = document.getElementById('storicoA').value;
-      if (!daInput || !aInput) return alert('Seleziona entrambe le date');
+async function caricaStorico() {
+  const daInput = document.getElementById('storicoDa').value;
+  const aInput = document.getElementById('storicoA').value;
+  if (!daInput || !aInput) return alert('Seleziona entrambe le date');
 
-      const loader = document.getElementById('storicoLoader');
-      const messaggioVuoto = document.getElementById('nessunRisultato');
-      const tbody = document.getElementById('storicoBody');
+  const loader = document.getElementById('storicoLoader');
+  const messaggioVuoto = document.getElementById('nessunRisultato');
+  const tbody = document.getElementById('storicoBody');
+  const btnEsporta = document.getElementById('btnEsportaStorico');
 
-      loader.style.display = 'block';
-      messaggioVuoto.classList.remove('visible');
-      tbody.innerHTML = '';
+  loader.style.display = 'block';
+  messaggioVuoto.classList.remove('visible');
+  tbody.innerHTML = '';
+  btnEsporta.style.display = 'none';
 
-      const from = new Date(`${daInput}T00:00:00`);
-      const to = new Date(`${aInput}T23:59:59`);
-      const fromUTC = from.toISOString();
-      const toUTC = to.toISOString();
+  const from = new Date(`${daInput}T00:00:00`);
+  const to = new Date(`${aInput}T23:59:59`);
+  const fromUTC = from.toISOString();
+  const toUTC = to.toISOString();
 
-      try {
-        const res = await fetch(`/api/scansioni?from=${encodeURIComponent(fromUTC)}&to=${encodeURIComponent(toUTC)}`);
-        const dati = await res.json();
-        if (dati.length === 0) {
-          messaggioVuoto.classList.add('visible');
-        } else {
-          dati.forEach(row => {
-            const dataLocale = new Date(row.dataora + 'Z').toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
-            tbody.innerHTML += `<tr>
-              <td style="padding:8px;">${row.codice}</td>
-              <td style="padding:8px;">${row.descrizione || ''}</td>
-              <td style="padding:8px; text-align:right;">${row.quantita}</td>
-              <td style="padding:8px;">${dataLocale}</td>
-            </tr>`;
-          });
-        }
-      } catch (error) {
-        alert('Errore durante il recupero dei dati');
-      } finally {
-        loader.style.display = 'none';
-      }
+  try {
+    const res = await fetch(`/api/scansioni?from=${encodeURIComponent(fromUTC)}&to=${encodeURIComponent(toUTC)}`);
+    const dati = await res.json();
+    if (dati.length === 0) {
+      messaggioVuoto.classList.add('visible');
+    } else {
+      dati.forEach(row => {
+        const dataLocale = new Date(row.dataora + 'Z').toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+        tbody.innerHTML += `<tr>
+          <td style="padding:8px;">${row.codice}</td>
+          <td style="padding:8px;">${row.descrizione || ''}</td>
+          <td style="padding:8px; text-align:right;">${row.quantita}</td>
+          <td style="padding:8px;">${dataLocale}</td>
+        </tr>`;
+      });
+      btnEsporta.style.display = 'inline-block';
     }
+  } catch (error) {
+    alert('Errore durante il recupero dei dati');
+  } finally {
+    loader.style.display = 'none';
+  }
+}
+
+function esportaStorico() {
+  const table = document.querySelector('#storicoRisultati table');
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.table_to_sheet(table);
+  XLSX.utils.book_append_sheet(wb, ws, 'Storico');
+  XLSX.writeFile(wb, 'storico_scansioni.xlsx');
+}
   </script>
 </body>
 </html>
