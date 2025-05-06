@@ -252,7 +252,7 @@ th, td {
       const d = inputDescrizione.value.trim();
       if (!isNaN(q) && d !== "") {
         const now = new Date();
-        const dataOra = now.toLocaleDateString() + ' ' + now.toLocaleTimeString({ timeZone: 'UTC' });
+        const dataOra = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
         dati.push([codiceCorrente, d, q, dataOra]);
         descrizioni[codiceCorrente] = d;
         await fetch('/api/descrizioni', {
