@@ -5,32 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ScanFarmaci</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💊</text></svg>">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-async function caricaStorico() {
-  const daInput = document.getElementById('storicoDa').value;
-  const aInput = document.getElementById('storicoA').value;
-  if (!daInput || !aInput) return alert('Seleziona entrambe le date');
-
-  const from = new Date(`${daInput}T00:00:00`);
-  const to = new Date(`${aInput}T23:59:59`);
-  const fromUTC = from.toISOString();
-  const toUTC = to.toISOString();
-
-  const res = await fetch(`/api/scansioni?from=${encodeURIComponent(fromUTC)}&to=${encodeURIComponent(toUTC)}`);
-  const dati = await res.json();
-  const tbody = document.getElementById('storicoBody');
-  tbody.innerHTML = '';
-  dati.forEach(row => {
-    const dataLocale = new Date(row.dataora).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
-    tbody.innerHTML += `<tr>
-      <td style="padding:8px;">${row.codice}</td>
-      <td style="padding:8px;">${row.descrizione || ''}</td>
-      <td style="padding:8px; text-align:right;">${row.quantita}</td>
-      <td style="padding:8px;">${dataLocale}</td>
-    </tr>`;
-  });
-}
-    </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
   <style>
     body { font-family: sans-serif; margin: 0; background: #eef3f7; }
@@ -315,7 +290,7 @@ th, td {
   const tbody = document.getElementById('storicoBody');
   tbody.innerHTML = '';
   dati.forEach(row => {
-    const dataLocale = new Date(row.dataora).toLocaleString('it-IT', { timeZone: 'UTC' });
+    const dataLocale = new Date(row.dataora).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
     tbody.innerHTML += `<tr>
       <td style="padding:8px;">${row.codice}</td>
       <td style="padding:8px;">${row.descrizione || ''}</td>
