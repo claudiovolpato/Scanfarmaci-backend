@@ -290,7 +290,8 @@ th, td {
   const tbody = document.getElementById('storicoBody');
   tbody.innerHTML = '';
   dati.forEach(row => {
-    const dataLocale = new Date(row.dataora).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+    
+    const dataLocale = new Date(row.dataora+'Z').toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
     tbody.innerHTML += `<tr>
       <td style="padding:8px;">${row.codice}</td>
       <td style="padding:8px;">${row.descrizione || ''}</td>
