@@ -6,44 +6,19 @@
   <title>ScanFarmaci</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💊</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
   <style>
     body { font-family: sans-serif; margin: 0; background: #eef3f7; }
-header, nav a, button, input, table {
-  font-size: 16px;
-}
-main {
-  padding: 1em;
-}
-video {
-  height: auto;
-  max-height: 60vh;
-}
-table {
-  font-size: 14px;
-  width: 100%;
-}
-th, td {
-  padding: 6px;
-}
-@media (max-width: 600px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-    margin-top: 0.5em;
-  }
-  .qty-controls {
-    flex-direction: column;
-  }
-  input[type=text], input[type=number], input[type=date] {
-    width: 100%;
-  }
-}
+    header, nav a, button, input, table { font-size: 16px; }
+    main { padding: 1em; }
+    video { height: auto; max-height: 60vh; }
+    table { font-size: 14px; width: 100%; }
+    th, td { padding: 6px; }
+    @media (max-width: 600px) {
+      header { flex-direction: column; align-items: flex-start; }
+      nav { display: flex; flex-wrap: wrap; gap: 0.5em; margin-top: 0.5em; }
+      .qty-controls { flex-direction: column; }
+      input[type=text], input[type=number], input[type=date] { width: 100%; }
+    }
     header {
       background: #0077cc;
       color: white;
@@ -52,22 +27,15 @@ th, td {
       justify-content: space-between;
       padding: 0.5em 1em;
     }
-    #logo {
-      height: 40px;
-    }
+    #logo { height: 40px; }
     nav a {
       color: white;
       text-decoration: none;
       margin: 0 0.5em;
       font-weight: bold;
     }
-    nav a:hover {
-      text-decoration: underline;
-    }
-    main {
-      padding: 2em;
-      text-align: center;
-    }
+    nav a:hover { text-decoration: underline; }
+    main { padding: 2em; text-align: center; }
     video { width: 100%; max-width: 640px; display: none; border-radius: 12px; }
     button {
       margin: 0.5em;
@@ -78,7 +46,6 @@ th, td {
       background: #0077cc;
       color: white;
     }
-
     #modalOverlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999;
@@ -96,6 +63,38 @@ th, td {
     .qty-controls button { width: 40px; font-size: 18px; padding: 0.25em; }
     .section { display: none; }
     .active { display: block; }
+
+    /* Loader spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #storicoLoader {
+      display: none;
+      margin: 1em auto;
+      text-align: center;
+    }
+    #storicoLoader > div {
+      border: 4px solid #ccc;
+      border-top: 4px solid #0077cc;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    /* Messaggio Nessun Risultato */
+    #nessunRisultato {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      margin-top: 1em;
+      color: #555;
+      text-align: center;
+    }
+    #nessunRisultato.visible {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -103,7 +102,8 @@ th, td {
     <img id="logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>💊</text></svg>" alt="Logo">
     <nav>
       <a href="#" onclick="mostraPagina('scansioni')">Scansioni</a>
-      <a href="#" onclick="mostraPagina('esporta')">Esporta</a><a href="#" onclick="mostraPagina('storico')">Storico</a>
+      <a href="#" onclick="mostraPagina('esporta')">Esporta</a>
+      <a href="#" onclick="mostraPagina('storico')">Storico</a>
     </nav>
   </header>
 
@@ -112,28 +112,26 @@ th, td {
       <h2>Scan Farmaci</h2>
       <button onclick="startScan()">Scansiona articolo</button>
       <video id="preview" autoplay muted playsinline></video>
-      
-    <div id="output">
-      <table style="width:100%; border-collapse: collapse;">
-        <thead>
-          <tr style="background:#e0e0e0">
-            <th style="text-align:left; padding: 8px;">Codice</th>
-            <th style="text-align:left; padding: 8px;">Descrizione</th>
-            <th style="text-align:right; padding: 8px;">Quantità</th>
-            <th style="text-align:left; padding: 8px;">Data/Ora</th>
-          </tr>
-        </thead>
-        <tbody id="outputBody"></tbody>
-      </table>
-    </div>
-    
+      <div id="output">
+        <table style="width:100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background:#e0e0e0">
+              <th style="text-align:left; padding: 8px;">Codice</th>
+              <th style="text-align:left; padding: 8px;">Descrizione</th>
+              <th style="text-align:right; padding: 8px;">Quantità</th>
+              <th style="text-align:left; padding: 8px;">Data/Ora</th>
+            </tr>
+          </thead>
+          <tbody id="outputBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <section id="esporta" class="section">
       <h2>Esporta dati</h2>
       <button onclick="downloadExcel()">Scarica Excel</button>
     </section>
-  
+
     <section id="storico" class="section">
       <h2>Storico Scansioni</h2>
       <label>Da: <input type="date" id="storicoDa"></label>
@@ -151,10 +149,11 @@ th, td {
           </thead>
           <tbody id="storicoBody"></tbody>
         </table>
+        <p id="nessunRisultato">Nessun risultato trovato</p>
+        <div id="storicoLoader"><div></div></div>
       </div>
     </section>
-    </main>
-    
+  </main>
 
   <div id="modalOverlay">
     <div id="quantityPrompt">
@@ -228,7 +227,7 @@ th, td {
       if (!isNaN(q) && d !== "") {
         const now = new Date();
         const dataOra = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-        dati.push([codiceCorrente, d, q, dataLocaleOra]);
+        dati.push([codiceCorrente, d, q, dataOra]);
         descrizioni[codiceCorrente] = d;
         await fetch('/api/descrizioni', {
           method: 'POST',
@@ -275,33 +274,47 @@ th, td {
       XLSX.utils.book_append_sheet(wb, ws, 'Medicinali');
       XLSX.writeFile(wb, 'medicinali.xlsx');
     }
- async function caricaStorico() {
-  const daInput = document.getElementById('storicoDa').value;
-  const aInput = document.getElementById('storicoA').value;
-  if (!daInput || !aInput) return alert('Seleziona entrambe le date');
 
-  const from = new Date(`${daInput}T00:00:00`);
-  const to = new Date(`${aInput}T23:59:59`);
-  const fromUTC = from.toISOString();
-  const toUTC = to.toISOString();
+    async function caricaStorico() {
+      const daInput = document.getElementById('storicoDa').value;
+      const aInput = document.getElementById('storicoA').value;
+      if (!daInput || !aInput) return alert('Seleziona entrambe le date');
 
-  const res = await fetch(`/api/scansioni?from=${encodeURIComponent(fromUTC)}&to=${encodeURIComponent(toUTC)}`);
-  const dati = await res.json();
-  const tbody = document.getElementById('storicoBody');
-  tbody.innerHTML = '';
-  dati.forEach(row => {
-    
-    const dataLocale = new Date(row.dataora+'Z').toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
-    tbody.innerHTML += `<tr>
-      <td style="padding:8px;">${row.codice}</td>
-      <td style="padding:8px;">${row.descrizione || ''}</td>
-      <td style="padding:8px; text-align:right;">${row.quantita}</td>
-      <td style="padding:8px;">${dataLocale}</td>
-    </tr>`;
-  });
-} 
+      const loader = document.getElementById('storicoLoader');
+      const messaggioVuoto = document.getElementById('nessunRisultato');
+      const tbody = document.getElementById('storicoBody');
 
+      loader.style.display = 'block';
+      messaggioVuoto.classList.remove('visible');
+      tbody.innerHTML = '';
+
+      const from = new Date(`${daInput}T00:00:00`);
+      const to = new Date(`${aInput}T23:59:59`);
+      const fromUTC = from.toISOString();
+      const toUTC = to.toISOString();
+
+      try {
+        const res = await fetch(`/api/scansioni?from=${encodeURIComponent(fromUTC)}&to=${encodeURIComponent(toUTC)}`);
+        const dati = await res.json();
+        if (dati.length === 0) {
+          messaggioVuoto.classList.add('visible');
+        } else {
+          dati.forEach(row => {
+            const dataLocale = new Date(row.dataora + 'Z').toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+            tbody.innerHTML += `<tr>
+              <td style="padding:8px;">${row.codice}</td>
+              <td style="padding:8px;">${row.descrizione || ''}</td>
+              <td style="padding:8px; text-align:right;">${row.quantita}</td>
+              <td style="padding:8px;">${dataLocale}</td>
+            </tr>`;
+          });
+        }
+      } catch (error) {
+        alert('Errore durante il recupero dei dati');
+      } finally {
+        loader.style.display = 'none';
+      }
+    }
   </script>
-    
 </body>
 </html>
