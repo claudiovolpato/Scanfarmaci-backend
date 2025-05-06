@@ -253,7 +253,7 @@ th, td {
       if (!isNaN(q) && d !== "") {
         const now = new Date();
         const dataOra = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-        dati.push([codiceCorrente, d, q, dataOra]);
+        dati.push([codiceCorrente, d, q, dataLocaleOra]);
         descrizioni[codiceCorrente] = d;
         await fetch('/api/descrizioni', {
           method: 'POST',
@@ -315,7 +315,7 @@ th, td {
   const tbody = document.getElementById('storicoBody');
   tbody.innerHTML = '';
   dati.forEach(row => {
-    const dataLocale = new Date(row.dataora).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+    const dataLocale = new Date(row.dataora).toLocaleString('it-IT', { timeZone: 'UTC' });
     tbody.innerHTML += `<tr>
       <td style="padding:8px;">${row.codice}</td>
       <td style="padding:8px;">${row.descrizione || ''}</td>
