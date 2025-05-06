@@ -6,7 +6,8 @@ export default async function handler(req, res) {
   const headers = {
     apikey: SUPABASE_KEY,
     Authorization: `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Prefer': 'resolution=merge-duplicates'
   };
 
   if (req.method === 'GET') {
