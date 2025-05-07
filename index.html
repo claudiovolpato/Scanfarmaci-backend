@@ -177,8 +177,8 @@
         <button onclick="modificaQuantita(-1)">−</button>
       </div>
       <div style="margin-top: 1em;">
-        <button onclick="confermaQuantita()">Conferma</button>
         <button onclick="annullaQuantita()">Annulla</button>
+        <button onclick="confermaQuantita()">Conferma</button>
       </div>
     </div>
   </div>
@@ -263,37 +263,6 @@ async function gestisciScansione() {
   }
 }
     
-    async function startScan() {
-      if (!('BarcodeDetector' in window)) return alert('BarcodeDetector non supportato.');
-      const detector = new BarcodeDetector();
-      const stream = await navigator.mediaDevices.getUserMedia({ video: 
-      { facingMode: "environment",
-        width: { ideal: 1920 },
-        height: { ideal: 1080 } } });
-      
-      videoElement.srcObject = stream;
-      await videoElement.play();
-      
-      const track = stream.getVideoTracks()[0];
-      const settings = track.getSettings();
-      const risoluzioneText = `Risoluzione: ${settings.width}×${settings.height}`;
-      document.getElementById('risoluzioneVideo').innerText = risoluzioneText;
-      
-      videoElement.style.display = 'block';
-
-      const interval = setInterval(async () => {
-        const barcodes = await detector.detect(videoElement);
-        if (barcodes.length > 0) {
-          codiceCorrente = barcodes[0].rawValue;
-          stream.getTracks().forEach(track => track.stop());
-          videoElement.style.display = 'none';
-          mostraPromptQuantita(codiceCorrente);
-          clearInterval(interval);
-          document.getElementById('risoluzioneVideo').innerText="";
-        }
-      }, 500);
-    }
-
   function fermaScansione() {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -306,6 +275,8 @@ async function gestisciScansione() {
       videoElement.style.display = 'none';
       document.getElementById('risoluzioneVideo').innerText = '';
     }
+
+    
     function mostraPromptQuantita(codice) {
       promptCodice.innerText = `Codice: ${codice}`;
       inputDescrizione.value = descrizioni[codice] || "";
