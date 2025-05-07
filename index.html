@@ -333,6 +333,26 @@ function esportaStorico() {
   XLSX.utils.book_append_sheet(wb, ws, 'Storico');
   XLSX.writeFile(wb, 'storico_scansioni.xlsx');
 }
+
+async function eliminaRiga(id) {
+  if (!confirm("Sei sicuro di voler eliminare questa riga?")) return;
+
+  try {
+    const res = await fetch(`/api/scansioni?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+    const result = await res.json();
+    if (!res.ok) {
+      alert('Errore durante l\'eliminazione: ' + result.error);
+    } else {
+      alert('Voce eliminata con successo');
+      caricaStorico(); // ricarica i dati
+    }
+  } catch (err) {
+    alert('Errore di rete: ' + err.message);
+  }
+}
+
   </script>
 </body>
 </html>
