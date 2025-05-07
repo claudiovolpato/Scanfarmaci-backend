@@ -211,7 +211,11 @@
     async function startScan() {
       if (!('BarcodeDetector' in window)) return alert('BarcodeDetector non supportato.');
       const detector = new BarcodeDetector();
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: 
+      { facingMode: "environment",
+        width: { ideal: 1920 },
+        height: { ideal: 1080 } } });
+      
       videoElement.srcObject = stream;
       await videoElement.play();
       videoElement.style.display = 'block';
