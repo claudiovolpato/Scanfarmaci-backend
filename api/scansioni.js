@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     const fromISO = `${from}T00:00:00`;
     const toISO = `${to}T23:59:59`;
 
-    const query = `${url}/rest/v1/scansioni?select=codice,quantita,dataora,descrizioni(descrizione)&dataora=gte.${fromISO}&dataora=lte.${toISO}&order=dataora.desc`;
+    const query = `${url}/rest/v1/scansioni?select=id,codice,quantita,dataora,descrizioni(descrizione)&dataora=gte.${fromISO}&dataora=lte.${toISO}&order=dataora.desc`;
 
     const resp = await fetch(query, { headers });
     const data = await resp.json();
