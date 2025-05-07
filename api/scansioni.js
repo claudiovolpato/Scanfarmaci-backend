@@ -53,6 +53,7 @@ export default async function handler(req, res) {
     if (!resp.ok) return res.status(resp.status).json({ error: data });
 
     const mapped = data.map(r => ({
+      id: r.id,
       codice: r.codice,
       descrizione: r.descrizioni?.descrizione || '',
       quantita: r.quantita,
